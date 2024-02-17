@@ -1,40 +1,61 @@
-import React, { useEffect, useState } from 'react'
-import DataTable from 'react-data-table-component';
-import { FetchProduct } from '../service/ProductCategory';
+import React, { useEffect, useState } from "react";
+import DataTable from "react-data-table-component";
+import { FetchProduct } from "../service/ProductCategory";
+import { useNavigate } from 'react-router-dom';
 
 function Dashboard() {
-    const [product,setProduct] = useState([]);
-    useEffect(()=>{
-        FetchProduct()
-        .then(res=>setProduct(res))
+  let navigate = useNavigate();
+  const [product, setProduct] = useState([]);
+  const [search,setSearch] = useState("");
+  useEffect(() => {
+    FetchProduct().then((res) => setProduct(res));
+  },[]);
+  useEffect(()=>{
+    const result=product.filter(pro=>{
+      return pro.title && pro.title.toLowerCase().match(search.toLowerCase())
     })
-    const columns = [
-        {
-            name: 'Title',
-            selector: row => row.title,
-        },
-        {
-            name: 'Price',
-            selector: row => row.price,
-        },
-        {
-            name: 'Images',
-            selector: row => <img src={row.images[0]} style={{width:'100px'}}/>
-        },
-        {
-            name: 'Action',
-            selector : row => <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Edit</button>
-        }
-    ];
-    
+    setProduct(result)
+  },[search])
+  const columns = [
+    {
+      name: "Title",
+      selector: (row) => row.title,
+    },
+    {
+      name: "Price",
+      selector: (row) => row.price,
+    },
+    {
+      name: "Images",
+      selector: (row) => <img src={row.images[0]} style={{ width: "100px" }} />,
+    },
+    {
+      name: "Action",
+      selector: (row) => (
+        <button
+          class="inline-block rounded border border-indigo-600 bg-indigo-600 px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-indigo-600 focus:outline-none focus:ring active:text-indigo-500"
+          href="/download"
+          onClick={()=>navigate('/edit',{state:row})} 
+        >
+          Edit
+        </button>
+      ),
+    },
+  ];
+
   return (
     <div class="container mx-auto px-10">
-        <DataTable
-			columns={columns}
-			data={product}
-		/>
+      <DataTable  columns={columns} 
+                  data={product} 
+                  pagination 
+                  subHeader 
+                  subHeaderComponent={
+                    <input onChange={(e)=>{
+                      setSearch(e.target.value);
+                    }} type="text" id="default-input" placeholder="Search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></input>
+                  }/>
     </div>
-  )
+  );
 }
 
-export default Dashboard
+export default Dashboard;
